@@ -2,6 +2,7 @@ name: run
 
 on:
   schedule:
+    - workflow_dispatch
     - cron: '0 0 * * *'
 
 permissions: write-all
@@ -14,10 +15,23 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
       
-      - name: 'Groovy'
-        id: groovy
-        uses: daniel-marthaler/plaintext-groovy-action@master
-        with:
-          SCRIPT: go.groovy
-        env:
-          TOKEN: ${{ secrets.TOKEN }}
+      - name: 'Install Groovy'
+        id: install-groovy
+        run: |
+          sudo apt install groovy
+          # groovy --version
+      
+      - name: 'Run and commit'
+        id: read-targets
+        run: |
+          
+          groovy main.groovy
+
+          git config user.email "github@plaintext.ch"
+          git config user.name "GithubActions"
+          
+          git add -A
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Update alt.xlsx [skip-ci]"
+            git push
+          fi
