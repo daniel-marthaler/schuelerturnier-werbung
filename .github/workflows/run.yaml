@@ -1,0 +1,23 @@
+name: run
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions: write-all
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      
+      - name: 'Groovy'
+        id: groovy
+        uses: daniel-marthaler/plaintext-groovy-action@master
+        with:
+          SCRIPT: go.groovy
+        env:
+          TOKEN: ${{ secrets.TOKEN }}

@@ -1,0 +1,17 @@
+/target/plaintext-dockercompose-1-SNAPSHOT.jar
+/target/maven-archiver/pom.properties
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/codeStyles/Project.xml
+/.idea/schuelerturnier-werbung.iml
+/.idea/vcs.xml
+/.idea/workspace.xml
+/.idea/compiler.xml
+/.idea/encodings.xml
+/.idea/sonarlint/issuestore/index.pb
+/.idea/sonarlint/securityhotspotstore/index.pb
+/.idea/jarRepositories.xml
+/plaintext-dockercompose.iml
+/schuelerturnier-werbung.iml
+/target/schuelerturnier-werbung-1-SNAPSHOT.jar
