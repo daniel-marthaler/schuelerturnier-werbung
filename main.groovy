@@ -40,11 +40,17 @@ if(neu == alt){
     System.exit(0)
 }
 
-FileUtils.deleteQuietly(new File('old.hash'))
-FileUtils.writeStringToFile(new File('old.hash'),neu,"utf-8")
+log.info ("not same")
 
-update(getHeaderFront() + getLines("300",mappe), "39",write);
-update(getHeaderSponsoren() + getLines("400",mappe), "42",write);
+FileUtils.deleteQuietly(new File('old.hash'))
+log.info ("old.hash deleted  ...")
+FileUtils.writeStringToFile(new File('old.hash'),neu,"utf-8")
+log.info ("new old.hash written  ...")
+
+log.info ("update 1 ...")
+update(getHeaderFront() + getLines("300",mappe), "39",write)
+log.info ("update 2 ...")
+update(getHeaderSponsoren() + getLines("400",mappe), "42",write)
 
 FileUtils.deleteQuietly(new File(filename))
 
