@@ -24,6 +24,8 @@ String source="${args[0]}"
 String filename = 'files/neu.xlsx'
 String mappe = "Aktuell"
 
+String write="${args[1]}"
+
 URL url = new URI(source).toURL();
 URLConnection connection = url.openConnection();
 
@@ -41,8 +43,8 @@ if(neu == alt){
 FileUtils.deleteQuietly(new File('old.hash'))
 FileUtils.writeStringToFile(new File('old.hash'),neu,"utf-8")
 
-update(getHeaderFront() + getLines("300",mappe), "39");
-update(getHeaderSponsoren() + getLines("400",mappe), "42");
+update(getHeaderFront() + getLines("300",mappe), "39",write);
+update(getHeaderSponsoren() + getLines("400",mappe), "42",write);
 
 FileUtils.deleteQuietly(new File(filename))
 
@@ -129,7 +131,7 @@ static  String getLines(String breite,String mappe) {
 static List getLinesX(String mappe){
     List ret = new ArrayList();
     Workbook workbook
-    workbook = new XSSFWorkbook("neu.xlsx");
+    workbook = new XSSFWorkbook("files/neu.xlsx");
     Iterator<Sheet> sheetIterator = workbook.sheetIterator();
     while (sheetIterator.hasNext()) {
         Sheet sheet = sheetIterator.next();
@@ -177,13 +179,10 @@ static String getLine(String firma, String pic, String link,String breite) {
     return "<a alt=\"${firma}\" target=\"_blank\" href=\"${lin}\"><img src=\"https://schuelerturnierworb.imgix.net/${pic}?w=${breite}&ar=4:1&fit=fill&fill=solid&fill-color=white&exp=1&border=3,FFFFFF\" /></a><br />"
 }
 
-static String read(String id) {
-    return Unirest.get("https://schuelerturnierworb.ch/werbung_read_848485115.php?id=${id}").asString().body
-}
 
-static void update(String update, String id) {
+static void update(String update, String id ,String url) {
     //FileUtils.writeStringToFile(new File(id+"_hallo.html"),update,"utf-8")
-    Unirest.post("https://schuelerturnierworb.ch/werbung_write_848485115.php").field("id", "${id}").field("text", "${update}").field("submit", "submit").asEmpty()
+    Unirest.post(url).field("id", "${id}").field("text", "${update}").field("submit", "submit").asEmpty()
 }
 
 
