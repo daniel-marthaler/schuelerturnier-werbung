@@ -25,7 +25,7 @@ jobs:
         id: read-targets
         run: |
           
-          groovy main.groovy ${{ secrets.DROPBOXFILE }} ${{ secrets.WRITEURL }}
+          groovy main.groovy
 
           git config user.email "github@plaintext.ch"
           git config user.name "GithubActions"

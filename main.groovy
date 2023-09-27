@@ -20,8 +20,8 @@ Logger log = Logger.getLogger("")
 log.info ("Start ...")
 
 // achtung dl=1 ist wichtig
-String source="${args[0]}"
-String write="${args[1]}"
+String source="aa"
+String write="aa"
 
 String filename = 'files/neu.xlsx'
 String mappe = "Aktuell"
