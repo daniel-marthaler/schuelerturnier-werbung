@@ -19,17 +19,17 @@ Logger log = Logger.getLogger("")
 log.info ("Start ...")
 
 // achtung dl=1 ist wichtig
-String source="aa"
-String write="aa"
+String source="${args[0]}"
+String write="${args[1]}"
 
 String filename = 'files/neu.xlsx'
 String mappe = "Aktuell"
 
 URL url = new URI(source).toURL();
-URLConnection connection = url.openConnection();
+URLConnection connection = url.openConnection()
 
 // Download the file
-FileUtils.copyURLToFile(connection.getURL(), new File(filename));
+FileUtils.copyURLToFile(connection.getURL(), new File(filename))
 
 String neu = calcDirHash("files")
 String alt = FileUtils.readFileToString(new File('old.hash'),Charset.forName('UTF-8'))
