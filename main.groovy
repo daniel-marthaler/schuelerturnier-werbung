@@ -21,10 +21,10 @@ log.info ("Start ...")
 
 // achtung dl=1 ist wichtig
 String source="${args[0]}"
+String write="${args[1]}"
+
 String filename = 'files/neu.xlsx'
 String mappe = "Aktuell"
-
-String write="${args[1]}"
 
 URL url = new URI(source).toURL();
 URLConnection connection = url.openConnection();
