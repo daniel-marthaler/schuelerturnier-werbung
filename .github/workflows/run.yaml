@@ -32,7 +32,7 @@ jobs:
           
           git add -A
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Update alt.xlsx [skip-ci]"
+            git commit -m "Updateold.hash [skip-ci]"
             git push
           fi
         
