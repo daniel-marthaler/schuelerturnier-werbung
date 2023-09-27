@@ -1,0 +1,38 @@
+name: run
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions: write-all
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      
+      - name: 'Install Groovy'
+        id: install-groovy
+        run: |
+          sudo apt install groovy
+          groovy --version
+      
+      - name: 'Run and commit'
+        id: read-targets
+        run: |
+          
+          groovy main.groovy ${{ secrets.dropboxFile }}
+
+          git config user.email "github@plaintext.ch"
+          git config user.name "GithubActions"
+          
+          git add -A
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Update alt.xlsx [skip-ci]"
+            git push
+          fi
+        
