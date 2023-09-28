@@ -1,3 +1,4 @@
+import kong.unirest.HttpRequestWithBody
 import kong.unirest.Unirest
 import org.apache.commons.lang3.StringUtils
 import org.apache.poi.xssf.usermodel.*
@@ -59,8 +60,7 @@ static  String getLines(String breite,String mappe) {
     for(List l : getLinesX('Aktuell')){
         if(l.size() > 5 && l.get(6).equals("Hauptsponsor")){
             String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            text = StringUtils.removeEnd(text,",")
-            res = res + text +"\n"
+            res = res + filter(text) +"\n"
         }
     }
 
@@ -68,8 +68,7 @@ static  String getLines(String breite,String mappe) {
     for(List l : getLinesX(mappe)){
         if(l.size() > 5 && l.get(6).equals("Gold")){
             String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            text = StringUtils.removeEnd(text,",")
-            res = res + text +"\n"
+            res = res + filter(text) +"\n"
         }
     }
 
@@ -77,8 +76,7 @@ static  String getLines(String breite,String mappe) {
     for(List l : getLinesX(mappe)){
         if(l.size() > 5 && l.get(6).equals("Silber")){
             String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            text = StringUtils.removeEnd(text,",")
-            res = res + text +"\n"
+            res = res + filter(text) +"\n"
         }
     }
 
@@ -86,8 +84,7 @@ static  String getLines(String breite,String mappe) {
     for(List l : getLinesX(mappe)){
         if(l.size() > 5 && l.get(6).contains("ronze")){
             String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            text = StringUtils.removeEnd(text,",")
-            res = res + text +"\n"
+            res = res + filter(text) +"\n"
         }
     }
 
@@ -95,8 +92,7 @@ static  String getLines(String breite,String mappe) {
     for(List l : getLinesX(mappe)){
         if(l.size() > 5 && l.get(6).contains("Siegershirt")){
             String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            text = StringUtils.removeEnd(text,",")
-            res = res + text +"\n"
+            res = res + filter(text) +"\n"
         }
     }
 
@@ -105,8 +101,7 @@ static  String getLines(String breite,String mappe) {
     for(List l : getLinesX('Donator')){
         if(l.size() > 5 && l.get(6).contains("Gönner")){
             String text = l.get(0)+ ', ' + l.get(1)
-            text = StringUtils.removeEnd(text,", ")
-            res = res + '<li><span style="font-size: 14px;">'+ text + '&nbsp;</span></span></li>'
+            res = res + '<li><span style="font-size: 14px;">'+ filter(text) + '&nbsp;</span></span></li>'
         }
     }
 
@@ -114,8 +109,7 @@ static  String getLines(String breite,String mappe) {
     for(List l : getLinesX('Donator')){
         if(l.size() > 5 && l.get(6).contains('Donator')){
             String text = l.get(0)+ ', ' + l.get(1)
-            text = StringUtils.removeEnd(text,", ")
-            res = res + '<li><span style="font-size: 14px;">'+text + '&nbsp;</span></span></li>'
+            res = res + '<li><span style="font-size: 14px;">'+filter(text) + '&nbsp;</span></span></li>'
         }
     }
 
@@ -126,11 +120,17 @@ static  String getLines(String breite,String mappe) {
             continue
         }
         String text = l.get(0)+ ', ' + l.get(1)
-        text = StringUtils.removeEnd(text,", ")
-        res = res + '<li><span style="font-size: 14px;">'+text + '&nbsp;</span></span></li>'
+        res = res + '<li><span style="font-size: 14px;">'+filter(text) + '&nbsp;</span></span></li>'
 
     }
     return res
+}
+
+static String filter(String input){
+    input = input.trim()
+    input = StringUtils.removeEnd(input,", ")
+    input = StringUtils.removeEnd(input,",")
+    return input
 }
 
 static List getLinesX(String mappe){
@@ -186,8 +186,11 @@ static String getLine(String firma, String pic, String link,String breite) {
 
 
 static void update(String update, String id ,String url) {
+    Logger log = Logger.getLogger("")
     //FileUtils.writeStringToFile(new File(id+"_hallo.html"),update,"utf-8")
-    Unirest.post(url).field("id", "${id}").field("text", "${update}").field("submit", "submit").asEmpty()
+    kong.unirest.BasicResponse ret = Unirest.post(url).field("id", "${id}").field("text", "${update}").field("submit", "submit").asEmpty()
+    log.info("Upload: " + ret.toString())
+    log.info("Status: " + ret.getStatus())
 }
 
 
