@@ -30,9 +30,9 @@ jobs:
           git config user.email "github@plaintext.ch"
           git config user.name "GithubActions"
           
-          git add -A
+          git add old.hash
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Updateold.hash [skip-ci]"
+            git commit -m "Update old.hash [skip-ci]"
             git push
           fi
         
