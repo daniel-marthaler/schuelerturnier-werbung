@@ -192,7 +192,7 @@ static void update(String update, String id ,String url) {
 
 
 static String calcDirHash(fileDir) {
-    def hash = MessageDigest.getInstance("MD5")
+    def hash = MessageDigest.getInstance("SHA-256")
     new File(fileDir).eachFileRecurse { file ->
         if (file.isFile()) {
             file.eachByte 4096, { bytes, size ->
