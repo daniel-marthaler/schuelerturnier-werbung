@@ -1,207 +1,141 @@
-import kong.unirest.HttpRequestWithBody
-import kong.unirest.Unirest
-import org.apache.commons.lang3.StringUtils
 import org.apache.poi.xssf.usermodel.*
-import org.apache.poi.ss.usermodel.*
-import org.apache.commons.io.FileUtils
 
-import java.security.MessageDigest
+import javax.mail.*
+
+import javax.mail.internet.*
+import javax.activation.*
 import java.util.logging.Logger
-
-import java.nio.charset.Charset
 
 @Grab('com.konghq:unirest-java:3.14.5')
 @Grab('org.apache.poi:poi-ooxml:5.2.3')
 @Grab('org.apache.poi:poi:5.2.3')
 @Grab('commons-io:commons-io:2.13.0')
 @Grab('org.apache.commons:commons-lang3:3.13.0')
+@Grab(group='javax.mail', module='mail', version='1.4.7')
 
 Logger log = Logger.getLogger("")
 log.info ("Start ...")
 
-// achtung dl=1 ist wichtig
-String source="${args[0]}"
-String write="${args[1]}"
+def path = "/Users/mad/Desktop/"
+def excelFilePath =path + "einladungen.xlsx"
 
-String filename = 'files/neu.xlsx'
-String mappe = "Aktuell"
+def workbook = new XSSFWorkbook(new FileInputStream(excelFilePath))
 
-URL url = new URI(source).toURL();
-URLConnection connection = url.openConnection()
+def sheet = workbook.getSheetAt(0)
 
-// Download the file
-FileUtils.copyURLToFile(connection.getURL(), new File(filename))
+sheet.each { row ->
 
-String neu = calcDirHash("files")
-String alt = FileUtils.readFileToString(new File('old.hash'),Charset.forName('UTF-8'))
+    String mail = row.getCell(0)
+    String anr = row.getCell(1)
+    String name = row.getCell(2)
 
-if(neu == alt){
-    log.info("same")
-    System.exit(0)
+    String anrede = anr + " " + name
+
+    if(!anr.contains("null")){
+        Thread.sleep(6000)
+        sendEmail("daniel.marthaler@plaintext.ch",anrede, path)
+    }
+
 }
 
-log.info ("not same")
+workbook.close()
 
-FileUtils.deleteQuietly(new File('old.hash'))
-log.info ("old.hash deleted  ...")
-FileUtils.writeStringToFile(new File('old.hash'),neu,"utf-8")
-log.info ("new old.hash written  ...")
+def sendEmail(String empfaenger,String anrede,String path) {
 
-log.info ("update 1 ...")
-update(getHeaderFront() + getLines("300",mappe), "39",write)
-log.info ("update 2 ...")
-update(getHeaderSponsoren() + getLines("400",mappe), "42",write)
+    def password = "***"
+    def username = "daniel@marthaler.io"
 
-FileUtils.deleteQuietly(new File(filename))
+    def subject = "Einladung zum Start der Plaintext GmbH v1.0 und zum SBB Abschiedsapero von Daniel Marthaler"
 
-static  String getLines(String breite,String mappe) {
+    def body = """
+<html>
+<body>
+    <p>"""+anrede+"""</p>
 
-    String res = "<h3>Hauptsponsor</h3>";
-    for(List l : getLinesX('Aktuell')){
-        if(l.size() > 5 && l.get(6).equals("Hauptsponsor")){
-            String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            res = res + filter(text) +"\n"
+    Du bist herzlich eingeladen:
+
+    <p>Am 11. Januar 2024 um 17:00 beim Freizeithaus Meielen in Zollikofen</p>
+
+    <p><strong>Programm:</strong></p>
+    <ul>
+        <li>17:00 - 18:30: Abschiedsapero</li>
+        <li>18:30 - 23:00: Outdoorfondue / Wurst vom Grill, als Fondue-Alternative</li>
+    </ul>
+
+    <p>Der Anlass findet draussen statt, deshalb werden warme Kleider empfohlen. <br/>
+    Gen&uuml;gend Platz zum Aufw&auml;rmen ist Freizeithaus ist vorhanden.</p>
+
+    <p>Bitte um An - und Abmeldung bis am 04.12.2023 per E-Mail an: 
+    <a href="mailto:daniel@marthaler.io">daniel@marthaler.io</a></p>
+
+    <p>Bei der Anmeldung angeben:</p>
+    <ul>
+        <li>[  ] Fondue</li>
+        <li>[  ] Wurst</li>
+    </ul>
+
+    <p>Geschenke: Bitte keine, ein K&auml;sseli wird trotzdem bereitstehen, der Inhalt 
+    kommt vollumf&auml;nglich dem <br/>Kinderheim Aeschbacherhus in M&uuml;nsinge zugute.</p>
+
+    <p>Ich freue mich auf einen gem&uuml;tlichen Abend...</p>
+
+    <p>Liebe Gr&uuml;sse<br/>
+    D&auml;nu</p><br/>
+</body>
+</html>
+"""
+
+    def properties = new Properties()
+    properties.setProperty("mail.smtp.auth", "true")
+    properties.setProperty("mail.smtp.starttls.enable", "true")
+    properties.setProperty("mail.smtp.starttls.required", "true")
+
+    properties.setProperty("mail.smtp.host", "asmtp.mail.hostpoint.ch")
+    properties.setProperty("mail.smtp.port", "587")
+
+    // Set TLS protocol and specific cipher suites
+    properties.setProperty("mail.smtp.ssl.protocols", "TLSv1.2")
+    properties.setProperty("mail.smtp.ssl.ciphersuites", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")
+
+
+    def session = Session.getInstance(properties, new javax.mail.Authenticator() {
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(username,  password)
         }
+    })
+
+    try {
+        def message = new MimeMessage(session)
+        message.setFrom(new InternetAddress(username))
+        message.setRecipients(Message.RecipientType.TO, empfaenger)
+        message.setSubject(subject)
+
+
+
+        BodyPart messageBodyPart = new MimeBodyPart()
+        messageBodyPart.setContent(body, "text/html")
+
+
+        BodyPart attachmentBodyPart = new MimeBodyPart()
+
+        String filename = path + "Einladung-11-1-24.png"
+        DataSource source = new FileDataSource(filename)
+        attachmentBodyPart.setDataHandler(new DataHandler(source))
+        attachmentBodyPart.setFileName(filename)
+
+
+        Multipart multipart = new MimeMultipart()
+        multipart.addBodyPart(messageBodyPart)
+        multipart.addBodyPart(attachmentBodyPart)
+
+        message.setContent(multipart)
+
+        Transport.send(message)
+
+        println("Email weg zu: " + empfaenger)
+    } catch (MessagingException e) {
+        e.printStackTrace()
+        println("Error sending email: " + e.message)
     }
-
-    res = res + "<h3>Goldsponsoren</h3>"
-    for(List l : getLinesX(mappe)){
-        if(l.size() > 5 && l.get(6).equals("Gold")){
-            String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            res = res + filter(text) +"\n"
-        }
-    }
-
-    res = res + "<h3>Silbersponsoren</h3>"
-    for(List l : getLinesX(mappe)){
-        if(l.size() > 5 && l.get(6).equals("Silber")){
-            String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            res = res + filter(text) +"\n"
-        }
-    }
-
-    res = res + "<h3>Bronzesponsoren</h3>"
-    for(List l : getLinesX(mappe)){
-        if(l.size() > 5 && l.get(6).contains("ronze")){
-            String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            res = res + filter(text) +"\n"
-        }
-    }
-
-    res = res + "<h3>Siegershirt Sponsoring</h3>"
-    for(List l : getLinesX(mappe)){
-        if(l.size() > 5 && l.get(6).contains("Siegershirt")){
-            String text = getLine(l.get(0),l.get(10), l.get(9),breite)
-            res = res + filter(text) +"\n"
-        }
-    }
-
-
-    res = res + "<h3>Gönner</h3>"
-    for(List l : getLinesX('Donator')){
-        if(l.size() > 5 && l.get(6).contains("Gönner")){
-            String text = l.get(0)+ ', ' + l.get(1)
-            res = res + '<li><span style="font-size: 14px;">'+ filter(text) + '&nbsp;</span></span></li>'
-        }
-    }
-
-    res = res + "<h3>Donatoren</h3>"
-    for(List l : getLinesX('Donator')){
-        if(l.size() > 5 && l.get(6).contains('Donator')){
-            String text = l.get(0)+ ', ' + l.get(1)
-            res = res + '<li><span style="font-size: 14px;">'+filter(text) + '&nbsp;</span></span></li>'
-        }
-    }
-
-    res = res + "<h3>Tombolasponsoren</h3>"
-    for(List l : getLinesX('Tombola')){
-
-        if("".equals(l.get(0))){
-            continue
-        }
-        String text = l.get(0)+ ', ' + l.get(1)
-        res = res + '<li><span style="font-size: 14px;">'+filter(text) + '&nbsp;</span></span></li>'
-
-    }
-    return res
 }
 
-static String filter(String input){
-    input = input.trim()
-    input = StringUtils.removeEnd(input,", ")
-    input = StringUtils.removeEnd(input,",")
-    return input
-}
-
-static List getLinesX(String mappe){
-    List ret = new ArrayList();
-    Workbook workbook
-    workbook = new XSSFWorkbook("files/neu.xlsx");
-    Iterator<Sheet> sheetIterator = workbook.sheetIterator();
-    while (sheetIterator.hasNext()) {
-        Sheet sheet = sheetIterator.next();
-        if(sheet.getSheetName().toString().contains(mappe)){
-            Iterator<Row> rowIterator = sheet.rowIterator();
-            rowIterator.next()
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                Iterator<Cell> cellIterator = row.cellIterator();
-                List l = new ArrayList();
-             while (cellIterator.hasNext()){
-                 l.add(cellIterator.next().toString())
-             }
-                ret.add(l)
-            }
-        }
-    }
-    return ret
-}
-
-static String getHeaderFront() {
-    return "<img style=\"margin-top: 5px; margin-bottom: 5px;\" src=\"https://schuelerturnierworb.imgix.net/sponsoren2.png\" /> <br />"
-}
-
-static String getHeaderSponsoren() {
-    return "<h4>Ein herzliches Dankeschön unseren Sponsoren, Gönnern Donatoren und Inserenten</h4>"
-}
-
-static String getLine(String firma, String pic, String link,String breite) {
-
-    if(link.isEmpty() || link.equals("--")){
-        return "";
-    }
-
-    if(pic.isEmpty() || pic.equals("--")){
-        return "";
-    }
-
-    pic = pic.replace('pdf','png')
-
-    String lin = link;
-    if(!lin.startsWith("https")){
-        lin = "https://" + lin
-    }
-    return "<a alt=\"${firma}\" target=\"_blank\" href=\"${lin}\"><img src=\"https://schuelerturnierworb.imgix.net/${pic}?w=${breite}&ar=4:1&fit=fill&fill=solid&fill-color=white&exp=1&border=3,FFFFFF\" /></a><br />"
-}
-
-
-static void update(String update, String id ,String url) {
-    Logger log = Logger.getLogger("")
-    //FileUtils.writeStringToFile(new File(id+"_hallo.html"),update,"utf-8")
-    kong.unirest.BasicResponse ret = Unirest.post(url).field("id", "${id}").field("text", "${update}").field("submit", "submit").asEmpty()
-    log.info("Upload: " + ret.toString())
-    log.info("Status: " + ret.getStatus())
-}
-
-
-static String calcDirHash(fileDir) {
-    def hash = MessageDigest.getInstance("MD5")
-    new File(fileDir).eachFileRecurse { file ->
-        if (file.isFile()) {
-            file.eachByte 4096, { bytes, size ->
-                hash.update(bytes, 0 as byte, size);
-            }
-        }
-    }
-    return hash.digest().encodeHex() as String
-}
