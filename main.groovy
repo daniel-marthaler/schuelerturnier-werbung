@@ -68,7 +68,7 @@ static String replace(String text) {
 
 def sendEmail(String empfaenger,String anrede,String path) {
 
-    def password = "Xv&hOlrN%nsvPTB\$"
+    def password = "****"
     def username = "daniel@marthaler.io"
 
     def subject = "Einladung zum Start der Plaintext GmbH v1.0 und zum SBB Abschiedsapero von Daniel Marthaler"
