@@ -16,12 +16,14 @@ import java.util.logging.Logger
 Logger log = Logger.getLogger("")
 log.info ("Start ...")
 
-def path = "/Users/mad/Desktop/"
+def path = "/Users/mad/Library/Group Containers/G69SCX94XU.duck/Library/Application Support/duck/Volumes/Plaintext/marketing/23-11-26_fest/"
 def excelFilePath =path + "einladungen.xlsx"
 
 def workbook = new XSSFWorkbook(new FileInputStream(excelFilePath))
 
 def sheet = workbook.getSheetAt(0)
+
+int i = 0
 
 sheet.each { row ->
 
@@ -29,20 +31,44 @@ sheet.each { row ->
     String anr = row.getCell(1)
     String name = row.getCell(2)
 
-    String anrede = anr + " " + name
 
-    if(!anr.contains("null")){
-        Thread.sleep(6000)
-        sendEmail("daniel.marthaler@plaintext.ch",anrede, path)
+    boolean angemeldet = false
+    boolean abgemeldet = row.getCell(6).toString() == "1.0"
+
+    try {
+        XSSFFormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator()
+        Object value = formulaEvaluator.evaluateInCell(row.getCell(5))
+        angemeldet = (value.getNumericCellValue().toInteger() == 1)
+    } catch (Exception e){
+        e.printStackTrace()
+    }
+
+    //String anrede = anr + " " + name
+    //anrede = replace(anrede)
+
+
+    if(!angemeldet && !abgemeldet && !mail.toString().equals("null")){
+        i ++
+        System.out.println(mail+ ",")
     }
 
 }
-
+System.out.println("Gesendet: " + i)
 workbook.close()
+
+static String replace(String text) {
+    return text.replaceAll(/Ä/, "&Auml;")
+            .replaceAll(/Ö/, "&Ouml;")
+            .replaceAll(/Ü/, "&Uuml;")
+            .replaceAll(/ä/, "&auml;")
+            .replaceAll(/ö/, "&ouml;")
+            .replaceAll(/ü/, "&uuml;")
+            .replaceAll(/ß/, "&szlig;")
+}
 
 def sendEmail(String empfaenger,String anrede,String path) {
 
-    def password = "***"
+    def password = "Xv&hOlrN%nsvPTB\$"
     def username = "daniel@marthaler.io"
 
     def subject = "Einladung zum Start der Plaintext GmbH v1.0 und zum SBB Abschiedsapero von Daniel Marthaler"
@@ -54,30 +80,31 @@ def sendEmail(String empfaenger,String anrede,String path) {
 
     Du bist herzlich eingeladen:
 
-    <p>Am 11. Januar 2024 um 17:00 beim Freizeithaus Meielen in Zollikofen</p>
+    <p>Am 11. Januar 2024 um 17:00 beim Freizeithaus Meielen in Zollikofen: <a href="https://www.google.ch/maps/place/Freizeithaus+Meielen/@46.9973699,7.4644985,17z/data=!4m14!1m7!3m6!1s0x478e3a71d6ef1c2d:0x5b8b5894a4841784!2sFreizeithaus+Meielen!8m2!3d46.9973699!4d7.4670788!16s%2Fg%2F11g7z4_dln!3m5!1s0x478e3a71d6ef1c2d:0x5b8b5894a4841784!8m2!3d46.9973699!4d7.4670788!16s%2Fg%2F11g7z4_dln?entry=ttu" target="_blank">Google Maps</a></p>
+</body></p>
 
-    <p><strong>Programm:</strong></p>
+    <p>Programm:</p>
     <ul>
         <li>17:00 - 18:30: Abschiedsapero</li>
         <li>18:30 - 23:00: Outdoorfondue / Wurst vom Grill, als Fondue-Alternative</li>
     </ul>
 
     <p>Der Anlass findet draussen statt, deshalb werden warme Kleider empfohlen. <br/>
-    Gen&uuml;gend Platz zum Aufw&auml;rmen ist Freizeithaus ist vorhanden.</p>
+    Gen&uuml;gend Platz zum Aufw&auml;rmen im Freizeithaus ist vorhanden.</p>
 
-    <p>Bitte um An - und Abmeldung bis am 04.12.2023 per E-Mail an: 
+    <p>Bitte um An - oder Abmeldung bis am 04.12.2023 per E-Mail an: 
     <a href="mailto:daniel@marthaler.io">daniel@marthaler.io</a></p>
 
     <p>Bei der Anmeldung angeben:</p>
     <ul>
-        <li>[  ] Fondue</li>
-        <li>[  ] Wurst</li>
+        <li>[ ] Fondue</li>
+        <li>[ ] Wurst</li>
     </ul>
 
     <p>Geschenke: Bitte keine, ein K&auml;sseli wird trotzdem bereitstehen, der Inhalt 
-    kommt vollumf&auml;nglich dem <br/>Kinderheim Aeschbacherhus in M&uuml;nsinge zugute.</p>
+    kommt <br/>vollumf&auml;nglich dem <a href="https://www.aeschbacherhuus.ch" target="_blank">Kinderheim Aeschbacherhuus</a> in M&uuml;nsinge zugute.</p>
 
-    <p>Ich freue mich auf einen gem&uuml;tlichen Abend...</p>
+    <p>Ich freue mich auf einen gem&uuml;tlichen Abend</p>
 
     <p>Liebe Gr&uuml;sse<br/>
     D&auml;nu</p><br/>
@@ -98,7 +125,7 @@ def sendEmail(String empfaenger,String anrede,String path) {
     properties.setProperty("mail.smtp.ssl.ciphersuites", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")
 
 
-    def session = Session.getInstance(properties, new javax.mail.Authenticator() {
+    def session = Session.getInstance(properties, new Authenticator() {
         protected PasswordAuthentication getPasswordAuthentication() {
             return new PasswordAuthentication(username,  password)
         }
