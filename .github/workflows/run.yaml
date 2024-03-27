@@ -32,7 +32,7 @@ jobs:
           
           git add old.hash
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Update old.hash [skip-ci]"
+            git commit -m "Update old.hash [skip-ci]" || true
             git push
           fi
         
